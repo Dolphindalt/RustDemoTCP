@@ -4,7 +4,7 @@ use std::thread;
 use std::io::{ErrorKind, Read, Write};
 
 const HOST: &str = "127.0.0.1:2727";
-const MAX_MESSAGE_SIZE: usize = 256;
+const MESSAGE_SIZE: usize = 256;
 
 fn main() {
     let server = TcpListener::bind(HOST).expect("Failed to start TCP listener");
@@ -18,9 +18,12 @@ fn main() {
 
             let tx = tx.clone();
             clients.push(socket.try_clone().expect("Failed to clone client"));
+            let mut buff = "Welcome to the chat room. Please send a message: ".as_bytes().to_vec();
+            buff.resize(MESSAGE_SIZE, 0);
+            socket.write(&buff).ok();
 
             thread::spawn(move || loop {
-                let mut buff = vec![0; MAX_MESSAGE_SIZE];
+                let mut buff = vec![0; MESSAGE_SIZE];
 
                 match socket.read_exact(&mut buff) {
                     Ok(_) => {
@@ -43,7 +46,7 @@ fn main() {
         if let Ok(msg) = rx.try_recv() {
             clients = clients.into_iter().filter_map(|mut client| {
                 let mut buff = msg.clone().into_bytes();
-                buff.resize(MAX_MESSAGE_SIZE, 0);
+                buff.resize(MESSAGE_SIZE, 0);
                 client.write_all(&buff).map(|_| client).ok()
             }).collect::<Vec<_>>();
         }
