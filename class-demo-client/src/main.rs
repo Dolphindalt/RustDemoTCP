@@ -61,7 +61,6 @@ fn main() {
         thread::sleep(Duration::from_millis(200));
     });
 
-    println!("Welcome to the chat room. Please send a message: ");
     // The main thread will listen for user input and pass it to the channel,
     // which is receiving in the thread spawned earlier.
     loop {
